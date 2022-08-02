@@ -15,5 +15,11 @@ class Currency extends Model
         "nominal", 
         "name", 
         "value", 
+        "load_id", 
     ];
+
+    public function loaded()
+    {
+        return $this->belongsTo(Load::class);
+    }
 }

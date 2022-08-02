@@ -12,4 +12,9 @@ class Load extends Model
     protected $fillable = [
         "date", 
     ];
+
+    public function currencies()
+    {
+        return $this->hasMany(Currency::class);
+    }
 }

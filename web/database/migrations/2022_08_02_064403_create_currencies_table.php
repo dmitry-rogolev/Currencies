@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string("char_code", 255)->collation("utf8mb4_bin")->nullable();
             $table->unsignedInteger("nominal")->nullable();
             $table->string("name", 255)->nullable();
-            $table->unsignedDecimal("value")->nullable();
+            $table->unsignedDecimal("value", 30, 4)->nullable();
             $table->foreignIdFor(Load::class)->nullable();
             $table->timestamps();
         });
