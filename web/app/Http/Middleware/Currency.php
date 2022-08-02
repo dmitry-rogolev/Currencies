@@ -74,6 +74,7 @@ class Currency
             if ($currency)
             {
                 $currency->value = $this->parseValue($valute["Value"]);
+                $currency->updated_at = now();
                 $currency->save();
             }
         }
@@ -83,14 +84,16 @@ class Currency
     {
         $this->xml = file_get_contents(config("currency.source"));
         $this->document = XmlParser::load(config("currency.source"));
-        $this->load = Load::latest("date")->first();
+        
     }
 
     protected function needLoading() : bool
     {
-        if (!$this->load) return true;
+        $load = Load::latest("date")->first();
 
-        $lastDate = new Carbon($this->load->date);
+        if (!$load) return true;
+
+        $lastDate = new Carbon($load->date);
 
         $currentDate = new Carbon($this->getCurrentDate());
 
@@ -101,7 +104,9 @@ class Currency
 
     protected function needUpdating()
     {
-        $updated = new Carbon($this->load->currencies()->first()->updated_at);
+        $load = Load::latest("date")->first();
+
+        $updated = new Carbon($load->currencies()->first()->updated_at);
 
         $interval = $updated->diffInSeconds(now(), false);
 
