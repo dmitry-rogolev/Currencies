@@ -22,10 +22,13 @@ class WelcomeController extends Controller
 
         $currencies = Load::latest("id")->first()->currencies()->visible()->get();
 
+        $visibles = Load::latest("id")->first()->currencies;
+
         return view("welcome", [
             "previous" => $previous, 
             "currencies" => $currencies, 
             "originals" => cache("originals"), 
+            "visibles" => $visibles, 
 
             "settings" => [
                 "target" => id(), 

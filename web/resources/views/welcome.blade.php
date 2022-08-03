@@ -28,9 +28,9 @@
                                         </div>
                                         <div class="form-group">
                                             <x-form.select name="visible[]" label="Отображаемые валюты" multiple>
-                                                @foreach ($currencies as $currency)
-                                                    <option value="{{ $currency->num_code }}">
-                                                        {{ $currency->char_code }} | {{ $currency->name }}
+                                                @foreach ($visibles as $visible)
+                                                    <option value="{{ $visible->num_code }}">
+                                                        {{ $visible->char_code }} | {{ $visible->name }}
                                                     </option>
                                                 @endforeach
                                             </x-form.select>
