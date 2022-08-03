@@ -34,7 +34,12 @@ class Currency
         return $next($request);
     }
 
-    protected function load()
+    /**
+     * Загружает данные из xml в БД
+     *
+     * @return void
+     */
+    protected function load() : void
     {
         $this->getData();
 
@@ -76,7 +81,12 @@ class Currency
         cache()->put("originals", $originals);
     }
 
-    protected function update()
+    /**
+     * Обновляет данные в БД
+     *
+     * @return void
+     */
+    protected function update() : void
     {
         $this->getData();
 
@@ -95,6 +105,11 @@ class Currency
         }
     }
 
+    /**
+     * Загружает данные с сервера
+     *
+     * @return void
+     */
     protected function getData() : void
     {
         while (true)
@@ -111,6 +126,11 @@ class Currency
         $this->xml = new SimpleXMLElement($xml);
     }
 
+    /**
+     * Проверяет нужна ли загрузка данных
+     *
+     * @return bool
+     */
     protected function needLoading() : bool
     {
         if (cache()->pull("load")) return true;
@@ -126,7 +146,12 @@ class Currency
         return false;
     }
 
-    protected function needUpdating()
+    /**
+     * Проверяет нужно ли обновление данных
+     *
+     * @return bool
+     */
+    protected function needUpdating() : bool
     {
         $load = $this->getLastLoad();
 
@@ -140,16 +165,32 @@ class Currency
         return false;
     }
 
-    private function getCurrentDate()
+    /**
+     * Возвращает текущую дату из xml
+     *
+     * @return string
+     */
+    private function getCurrentDate() : string
     {
         return (string) $this->xml["Date"];
     }
 
-    private function parseValue(string $value)
+    /**
+     * Преобразует строку с числом с плавающей запятой в float
+     *
+     * @param string $value Строка с числом с плавающей запятой
+     * @return float
+     */
+    private function parseValue(string $value) : float
     {
         return doubleval(str($value)->replace(",", ".")->toString());
     }
 
+    /**
+     * Возвращает последнюю загрузку
+     *
+     * @return Load|null
+     */
     private function getLastLoad() : ?Load
     {
         return Load::latest("id")->first();

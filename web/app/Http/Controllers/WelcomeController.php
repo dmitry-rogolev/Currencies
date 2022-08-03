@@ -5,10 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Load;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Contracts\View\View;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Http\RedirectResponse;
 
 class WelcomeController extends Controller
 {
-    public function show()
+    /**
+     * Рендерит и возвращает шаблон welcome
+     *
+     * @return View|Factory
+     */
+    public function show() : View | Factory
     {
         $previous = $this->previous();
 
@@ -26,7 +34,12 @@ class WelcomeController extends Controller
         ]);
     }
 
-    public function settings()
+    /**
+     * Применяет переданные в Request настройки
+     *
+     * @return RedirectResponse
+     */
+    public function settings() : RedirectResponse
     {
         $this->loads();
 
@@ -37,7 +50,12 @@ class WelcomeController extends Controller
         return back();
     }
 
-    private function loads()
+    /**
+     * Применяет настройку загрузки данных с xml
+     *
+     * @return void
+     */
+    private function loads() : void
     {
         if (request()->has("loads"))
         {
@@ -46,7 +64,12 @@ class WelcomeController extends Controller
         }
     }
 
-    private function visible()
+    /**
+     * Применяет настройку отображения валют
+     *
+     * @return void
+     */
+    private function visible() : void
     {
         if (request()->has("visible"))
         {
@@ -70,7 +93,12 @@ class WelcomeController extends Controller
         }
     }
 
-    private function interval()
+    /**
+     * Применяет настройку интервала обновления данных
+     *
+     * @return void
+     */
+    private function interval() : void
     {
         if (request()->has("interval"))
         {
@@ -78,6 +106,11 @@ class WelcomeController extends Controller
         }
     }
 
+    /**
+     * Возвращает предыдущую загрузку данных от последней
+     *
+     * @return Collection
+     */
     private function previous() : Collection
     {
         $valutes = Load::latest("id")->limit(2)->get()->skip(1)->first()?->currencies()->visible()->get();

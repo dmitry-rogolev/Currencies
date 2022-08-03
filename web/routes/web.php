@@ -14,8 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Первоначальная страница
 Route::get("/", [ WelcomeController::class, "show" ])
     ->name("welcome");
 
+// Маршрут применения настроек
 Route::post("/", [ WelcomeController::class, "settings" ])
     ->name("settings");
