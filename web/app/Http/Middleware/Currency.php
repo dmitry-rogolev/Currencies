@@ -16,8 +16,6 @@ class Currency
 
     protected ?Load $load;
 
-    protected Request $request;
-
     /**
      * Handle an incoming request.
      *
@@ -27,8 +25,6 @@ class Currency
      */
     public function handle(Request $request, Closure $next)
     {
-        $this->request = $request;
-
         if ($this->needLoading())
             $this->load();
 
@@ -84,7 +80,7 @@ class Currency
     {
         $this->getData();
 
-        $load = Load::latest("id")->first();
+        $load = $this->getLastLoad();
 
         foreach ($this->xml as $valute)
         {
@@ -101,56 +97,61 @@ class Currency
 
     protected function getData() : void
     {
-        // while (true)
-        // {
-        //     try {
-        //         $xml = file_get_contents(config("currency.source"));
-        //         break;
-        //     }
-        //     catch (Exception $e) {
-        //         continue;
-        //     }
-        // }
+        while (true)
+        {
+            try {
+                $xml = file_get_contents(config("currency.source"));
+                break;
+            }
+            catch (Exception $e) {
+                continue;
+            }
+        }
 
-        $this->xml = new SimpleXMLElement(file_get_contents(config("currency.source")));
+        $this->xml = new SimpleXMLElement($xml);
     }
 
     protected function needLoading() : bool
     {
-        $load = Load::latest("date")->first();
+        if (cache()->pull("load")) return true;
+
+        $load = $this->getLastLoad();
 
         if (!$load) return true;
 
-        if (cache()->pull("load")) return true;
-
         $lastDate = new Carbon($load->date);
 
-        if ($lastDate->diffInDays(today(), false) !== 0) return true;
+        if ($lastDate->diffInDays(today()) !== 0) return true;
 
         return false;
     }
 
     protected function needUpdating()
     {
-        $load = Load::latest("date")->first();
+        $load = $this->getLastLoad();
 
         $updated = new Carbon($load->currencies()->first()->updated_at);
 
-        $interval = $updated->diffInSeconds(now(), false);
+        $interval = $updated->diffInSeconds(now());
 
-        if ((cache()->has("interval") && $interval > cache("interval")) || ($interval > config("currency.default_interval")))
+        if (cache()->has("interval") && $interval > cache("interval") || $interval > config("currency.default_interval"))
             return true;
 
         return false;
     }
 
-    protected function getCurrentDate()
+    private function getCurrentDate()
     {
         return (string) $this->xml["Date"];
     }
 
-    protected function parseValue(string $value)
+    private function parseValue(string $value)
     {
         return doubleval(str($value)->replace(",", ".")->toString());
+    }
+
+    private function getLastLoad() : ?Load
+    {
+        return Load::latest("id")->first();
     }
 }

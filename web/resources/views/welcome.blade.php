@@ -36,7 +36,7 @@
                                             </x-form.select>
                                         </div>
                                         <div class="form-group">
-                                            <x-form.input name="interval" type="number" label="Интервал обновления данных в секундах" value="{{ old('interval') }}" />
+                                            <x-form.input name="interval" type="number" label="Интервал обновления данных в секундах" value="{{ old('interval') ?? cache('interval') ?? config('currency.default_interval') }}" />
                                         </div>
                                     </form>
                                 </div>

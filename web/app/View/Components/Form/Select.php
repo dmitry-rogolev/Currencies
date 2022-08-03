@@ -11,8 +11,6 @@ class Select extends Component
 
     protected string $label;
 
-    protected string $id;
-
     /**
      * Create a new component instance.
      *
@@ -22,7 +20,6 @@ class Select extends Component
     {
         $this->class = $class ?? "";
         $this->label = $label ?? "";
-        $this->id = Str::random(60);
     }
 
     /**
@@ -35,7 +32,7 @@ class Select extends Component
         return view('components.form.select', [
             "class" => $this->class, 
             "label" => $this->label, 
-            "id" => $this->id, 
+            "id" => id(), 
         ]);
     }
 }

@@ -13,10 +13,6 @@ class Input extends Component
 
     protected string $class;
 
-    protected string $id;
-
-    protected string $id_small;
-
     /**
      * Create a new component instance.
      *
@@ -27,8 +23,6 @@ class Input extends Component
         $this->label = $label ?? "";
         $this->small = $small ?? "";
         $this->class = $class ?? "";
-        $this->id = Str::random(60);
-        $this->id_small = Str::random(60);
     }
 
     /**
@@ -42,8 +36,8 @@ class Input extends Component
             "label" => $this->label, 
             "small" => $this->small, 
             "class" => $this->class, 
-            "id" => $this->id, 
-            "id_small" => $this->id_small, 
+            "id" => id(), 
+            "id_small" => id(), 
         ]);
     }
 }

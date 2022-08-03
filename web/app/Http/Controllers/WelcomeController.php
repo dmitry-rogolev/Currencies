@@ -4,23 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Load;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 
 class WelcomeController extends Controller
 {
     public function show()
     {
-        $valutes = Load::latest("id")->limit(2)->get()->skip(1)->first()?->currencies()->visible()->get();
-
-        $previous = collect();
-
-        if ($valutes)
-        {
-            foreach ($valutes as $valute)
-            {
-                $previous->put($valute->num_code, $valute->value);
-            }
-        }
+        $previous = $this->previous();
 
         $currencies = Load::latest("id")->first()->currencies()->visible()->get();
 
@@ -30,22 +20,14 @@ class WelcomeController extends Controller
             "originals" => cache("originals"), 
 
             "settings" => [
-                "target" => Str::random(60), 
-                "labelledby" => Str::random(60),  
+                "target" => id(), 
+                "labelledby" => id(),  
             ]
         ]);
     }
 
-    public function settings(Request $request)
+    public function settings()
     {
-        $request->validate([
-            "loads" => [ "array" ], 
-            "loads.*" => [ "integer" ], 
-            "show" => [ "array" ], 
-            "show.*" => [ "integer" ], 
-            "interval" => [  ], 
-        ]);
-
         $this->loads();
 
         $this->visible();
@@ -55,7 +37,7 @@ class WelcomeController extends Controller
         return back();
     }
 
-    protected function loads()
+    private function loads()
     {
         if (request()->has("loads"))
         {
@@ -64,11 +46,11 @@ class WelcomeController extends Controller
         }
     }
 
-    protected function visible()
+    private function visible()
     {
         if (request()->has("visible"))
         {
-           $load = Load::latest("date")->first();
+           $load = Load::latest("id")->first();
 
            $visible = collect(request()->visible);
 
@@ -88,11 +70,28 @@ class WelcomeController extends Controller
         }
     }
 
-    protected function interval()
+    private function interval()
     {
         if (request()->has("interval"))
         {
             cache()->put("interval", abs(intval(request()->interval)));
         }
+    }
+
+    private function previous() : Collection
+    {
+        $valutes = Load::latest("id")->limit(2)->get()->skip(1)->first()?->currencies()->visible()->get();
+
+        $previous = collect();
+
+        if ($valutes)
+        {
+            foreach ($valutes as $valute)
+            {
+                $previous->put($valute->num_code, $valute->value);
+            }
+        }
+
+        return $previous;
     }
 }
