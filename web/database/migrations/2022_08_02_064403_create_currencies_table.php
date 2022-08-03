@@ -21,6 +21,7 @@ return new class extends Migration
             $table->unsignedInteger("nominal")->nullable();
             $table->string("name", 255)->nullable();
             $table->unsignedDecimal("value", 30, 4)->nullable();
+            $table->boolean("visibility")->nullable();
             $table->foreignIdFor(Load::class)->nullable();
             $table->timestamps();
         });

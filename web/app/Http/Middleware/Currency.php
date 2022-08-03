@@ -5,20 +5,18 @@ namespace App\Http\Middleware;
 use App\Models\Currency as ModelsCurrency;
 use App\Models\Load;
 use Closure;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
-use Mtownsend\XmlToArray\XmlToArray;
-use Orchestra\Parser\Xml\Facade as XmlParser;
-use Orchestra\Parser\Xml\Document;
+use SimpleXMLElement;
 
 class Currency
 {
-    protected string $xml;
-
-    protected Document $document;
+    protected SimpleXMLElement $xml;
 
     protected ?Load $load;
+
+    protected Request $request;
 
     /**
      * Handle an incoming request.
@@ -29,12 +27,12 @@ class Currency
      */
     public function handle(Request $request, Closure $next)
     {
-        $this->getData();
+        $this->request = $request;
 
         if ($this->needLoading())
             $this->load();
 
-        if ($this->needUpdating())
+        else if ($this->needUpdating())
             $this->update();
 
         return $next($request);
@@ -42,38 +40,59 @@ class Currency
 
     protected function load()
     {
+        $this->getData();
+
         $date = $this->getCurrentDate();
 
         $load = Load::create([
             "date" => new Carbon($date), 
         ]);
 
-        $valutes = new Collection(XmlToArray::convert($this->xml)["Valute"]);
+        $loads = collect(cache("loads"));
 
-        foreach ($valutes as $valute)
+        $originals = collect();
+
+        foreach ($this->xml as $valute)
         {
+            $originals->push(ModelsCurrency::factory()->make([
+                "num_code" => (int) $valute->NumCode, 
+                "char_code" => (string) $valute->CharCode, 
+                "nominal" => (string) $valute->Nominal, 
+                "name" => (string) $valute->Name, 
+                "value" => $this->parseValue($valute->Value), 
+                "load_id" => $load->id, 
+            ]));
+
+            if ($loads->isNotEmpty() && !$loads->contains($valute->NumCode))
+                continue;
+
             ModelsCurrency::create([
-                "num_code" => $valute["NumCode"], 
-                "char_code" => $valute["CharCode"], 
-                "nominal" => $valute["Nominal"], 
-                "name" => $valute["Name"], 
-                "value" => $this->parseValue($valute["Value"]), 
+                "num_code" => $valute->NumCode, 
+                "char_code" => $valute->CharCode, 
+                "nominal" => $valute->Nominal, 
+                "name" => $valute->Name, 
+                "value" => $this->parseValue($valute->Value), 
+                "visibility" => true, 
                 "load_id" => $load->id, 
             ]);
         }
+
+        cache()->put("originals", $originals);
     }
 
     protected function update()
     {
-        $valutes = new Collection(XmlToArray::convert($this->xml)["Valute"]);
+        $this->getData();
 
-        foreach ($valutes as $valute)
+        $load = Load::latest("id")->first();
+
+        foreach ($this->xml as $valute)
         {
-            $currency = $this->load->currencies()->whereNumCode($valute["NumCode"])->first();
+            $currency = $load->currencies()->whereNumCode($valute->NumCode)->first();
 
             if ($currency)
             {
-                $currency->value = $this->parseValue($valute["Value"]);
+                $currency->value = $this->parseValue($valute->Value);
                 $currency->updated_at = now();
                 $currency->save();
             }
@@ -82,9 +101,18 @@ class Currency
 
     protected function getData() : void
     {
-        $this->xml = file_get_contents(config("currency.source"));
-        $this->document = XmlParser::load(config("currency.source"));
-        
+        // while (true)
+        // {
+        //     try {
+        //         $xml = file_get_contents(config("currency.source"));
+        //         break;
+        //     }
+        //     catch (Exception $e) {
+        //         continue;
+        //     }
+        // }
+
+        $this->xml = new SimpleXMLElement(file_get_contents(config("currency.source")));
     }
 
     protected function needLoading() : bool
@@ -93,11 +121,11 @@ class Currency
 
         if (!$load) return true;
 
+        if (cache()->pull("load")) return true;
+
         $lastDate = new Carbon($load->date);
 
-        $currentDate = new Carbon($this->getCurrentDate());
-
-        if ($lastDate->diffInDays($currentDate, false) !== 0) return true;
+        if ($lastDate->diffInDays(today(), false) !== 0) return true;
 
         return false;
     }
@@ -110,7 +138,7 @@ class Currency
 
         $interval = $updated->diffInSeconds(now(), false);
 
-        if ($interval > config("currency.default_interval"))
+        if ((cache()->has("interval") && $interval > cache("interval")) || ($interval > config("currency.default_interval")))
             return true;
 
         return false;
@@ -118,7 +146,7 @@ class Currency
 
     protected function getCurrentDate()
     {
-        return $this->document->parse([ [ "uses" => "::Date" ] ])[0];
+        return (string) $this->xml["Date"];
     }
 
     protected function parseValue(string $value)

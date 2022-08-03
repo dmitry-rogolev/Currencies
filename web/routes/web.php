@@ -16,3 +16,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get("/", [ WelcomeController::class, "show" ])
     ->name("welcome");
+
+Route::post("/", [ WelcomeController::class, "settings" ])
+    ->name("settings");

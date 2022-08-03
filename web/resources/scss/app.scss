@@ -6,9 +6,9 @@ body {
 
 .currency-up::after {
     content: "\25B2";
-    color: var(--bs-success);
+    color: var(--success);
 }
 .currency-down::after {
     content: "\25BC";
-    color: var(--bs-danger);
+    color: var(--danger);
 }
