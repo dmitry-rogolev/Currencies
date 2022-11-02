@@ -347,7 +347,11 @@ class Currencies
 
     private function getAllCurrencies()
     {
-        return $this->getLastLoad()->currencies;
+        $load = $this->getLastLoad();
+
+        if ($load) return $load->currencies;
+
+        return collect();
     }
 
     private function changeVisibility()

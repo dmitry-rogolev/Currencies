@@ -64,7 +64,7 @@
     import $ from "jquery";
 
     export default {
-        name: "Welcome", 
+        name: "WelcomeComponent", 
 
         computed: {
             header()

@@ -9,11 +9,11 @@
         <meta name="robots" content="all" />
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon">
-        @vite(["resources/js/app.js"])
-        <!-- <link href="/css/chunk-vendors.f0ea19bf.css" rel="stylesheet" />
-        <link href="/css/app.4ddd1198.css" rel="stylesheet">
-        <script defer="defer" src="/js/chunk-vendors.50a3f3b9.js"></script>
-        <script defer="defer" src="/js/app.0e014f40.js"></script> -->
+        <!-- @vite(["resources/js/app.js"]) -->
+        <link href="/css/chunk-vendors.940bb80a.css" rel="stylesheet" />
+        <link href="/css/app.b4a58684.css" rel="stylesheet">
+        <script defer="defer" src="/js/chunk-vendors.37884864.js"></script>
+        <script defer="defer" src="/js/app.dad07614.js"></script>
         <title>{{ config("view.title") }}</title>
     </head>
     <body class="min-vh-100">

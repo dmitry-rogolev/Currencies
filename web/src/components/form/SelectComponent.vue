@@ -2,7 +2,7 @@
     <label v-if="label" :for="id" class="form-label">
         {{ label }}
     </label>
-    <select v-model="modelValue" @change="$emit('update:modelValue', modelValue)" :id="label" :class="[ 'form-select', classes ]" :aria-label="label" v-bind="$attrs">
+    <select v-model="selected" @change="$emit('update:modelValue', selected)" :id="label" :class="[ 'form-select', classes ]" :aria-label="label" v-bind="$attrs">
         <slot></slot>
     </select>
 </template>
@@ -23,6 +23,7 @@
         {
             return {
                 id: id(), 
+                selected: this.modelValue, 
             };
         }, 
 
