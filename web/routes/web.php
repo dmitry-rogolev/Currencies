@@ -1,5 +1,6 @@
 <?php
 
+use App\Classes\Currencies;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,10 +15,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Первоначальная страница
 Route::get("/", [ WelcomeController::class, "show" ])
     ->name("welcome");
 
-// Маршрут применения настроек
-Route::post("/", [ WelcomeController::class, "settings" ])
+Route::post("/", [ WelcomeController::class, "store" ])
+    ->name("welcome.store");
+
+Route::post("/settings", [ WelcomeController::class, "settings" ])
     ->name("settings");

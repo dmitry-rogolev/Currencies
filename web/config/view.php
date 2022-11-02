@@ -33,4 +33,9 @@ return [
         realpath(storage_path('framework/views'))
     ),
 
+    "title" => env("HEAD_TITLE", "Валюты"), 
+    "keywords" => env("HEAD_KEYWORDS", ""), 
+    "description" => env("HEAD_DESCRIPTION", ""), 
+    "author" => env("HEAD_AUTHOR", ""), 
+
 ];
