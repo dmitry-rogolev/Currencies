@@ -5,7 +5,7 @@
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '7c59907211d422c8923c3509d1c16ca35b715891',
+        'reference' => '4877ec610e16eb3d54db9c8b7f956ab21400c7d3',
         'name' => 'laravel/laravel',
         'dev' => true,
     ),
@@ -92,7 +92,7 @@
             'install_path' => __DIR__ . '/../fakerphp/faker',
             'aliases' => array(),
             'reference' => '37f751c67a5372d4e26353bd9384bc03744ec77b',
-            'dev_requirement' => true,
+            'dev_requirement' => false,
         ),
         'filp/whoops' => array(
             'pretty_version' => '2.14.5',
@@ -370,7 +370,7 @@
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '7c59907211d422c8923c3509d1c16ca35b715891',
+            'reference' => '4877ec610e16eb3d54db9c8b7f956ab21400c7d3',
             'dev_requirement' => false,
         ),
         'laravel/pint' => array(
