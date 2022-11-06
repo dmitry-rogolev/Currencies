@@ -1,6 +1,5 @@
 <?php
 
-use App\Classes\Currencies;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 

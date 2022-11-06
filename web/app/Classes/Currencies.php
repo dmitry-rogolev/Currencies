@@ -4,7 +4,6 @@ namespace App\Classes;
 
 use App\Models\Currency;
 use App\Models\Load;
-use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use SimpleXMLElement;
@@ -12,6 +11,8 @@ use SimpleXMLElement;
 class Currencies
 {
     private SimpleXMLElement $xml;
+
+    private CurrencyRequest $request;
 
     private Collection $originals;
 
@@ -33,12 +34,13 @@ class Currencies
 
     public function __construct()
     {
-        $this->xml = $this->getXml();
+        $this->xml = HttpCurrencyServiceProvider::boot()->getXml();
+        $this->request = new CurrencyRequest();
+        $this->interval = $this->getInterval();
         $this->originals = $this->getOrCreateOriginalCurrencies();
-        $this->loads = $this->getRequestLoads();
+        $this->loads = $this->request->getLoads();
         $this->previous = $this->getPrevious();
         $this->currencies = $this->getCurrencies();
-        $this->interval = $this->getInterval();
         $this->visibles = $this->getRequestVisibles();
         $this->allCurrencies = $this->getAllCurrencies();
     }
@@ -118,31 +120,6 @@ class Currencies
         if ($lastLoadDate && $lastLoadDate == $currentDate) return false;
 
         return true;
-    }
-
-    /**
-     * Загружает данные с сервера
-     *
-     * @return SimpleXMLElement
-     */
-    private function getXml()
-    {
-        $try = 0;
-
-        while (true)
-        {
-            try {
-                $xml = file_get_contents(config("currency.source"));
-                break;
-            }
-            catch (Exception $e) {
-                if ($try > 5) throw $e;
-                $try++;
-                continue;
-            }
-        }
-
-        return new SimpleXMLElement($xml);
     }
 
     private function getLastLoad()
@@ -236,16 +213,6 @@ class Currencies
         ]);
     }
 
-    private function getRequestLoads()
-    {
-        if (request()->has("loads"))
-        {
-            return collect(json_decode(request()->loads));
-        }
-
-        return collect();
-    }
-
     private function needSave($num_code)
     {
         if ($this->loads->isNotEmpty())
@@ -311,15 +278,6 @@ class Currencies
         return $this->getUpdated()->diffInSeconds(now());
     }
 
-    private function getRequestInterval()
-    {
-        $interval = request()->get("interval");
-
-        if ($interval) $this->setSessionInterval($interval);
-
-        return $interval;
-    }
-
     private function getSessionInterval()
     {
         return session(self::NAME_SESSION_INTERVAL);
@@ -332,7 +290,11 @@ class Currencies
 
     private function getInterval()
     {
-        return $this->getRequestInterval() ?? $this->getSessionInterval() ?? config("currency.default_interval");
+        $interval = $this->request->getInterval();
+
+        if ($interval) $this->setSessionInterval($interval);
+
+        return $interval ?? $this->getSessionInterval() ?? config("currency.default_interval");
     }
 
     private function needUpdate()
