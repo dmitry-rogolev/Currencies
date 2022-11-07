@@ -4,7 +4,7 @@
             <div class="card-header">
                 <h3 :class="[ 'card-title', 'text-center' ]">{{ header }}</h3>
                 <FlexComponent classes="justify-content-center">
-                    <ModalComponent ref="ModalSettings" @save="settings" buttonClasses="btn-dark" title="Настройки" header="Настройки">
+                    <ModalComponent @save="settings" @show="beforeSettings" buttonClasses="btn-dark" title="Настройки" header="Настройки">
                         <template v-slot:button>
                             Настройки
                         </template>
@@ -31,7 +31,6 @@
                         </template>
                     </ModalComponent>
                 </FlexComponent>
-                <p :class="[ 'my-2', 'text-center' ]">Интервал обновления данных в секундах: {{ interval }}</p>
             </div>
             <div class="card-body">
                 <table class="table">
@@ -108,9 +107,18 @@
         }, 
 
         methods: {
+            beforeSettings()
+            {
+                this.dataInterval = this.interval;
+            }, 
+
             async settings()
             {
-                this.$refs.ModalSettings.close();
+                let interval = this.interval;
+
+                this.$store.commit("currencies", null);
+                this.$store.commit("visibles", null);
+                this.$store.commit("interval", null);
 
                 let data = await $.ajax({
                     url: "/settings", 
@@ -119,7 +127,7 @@
                         _token: this.token, 
                         loads: JSON.stringify(this.dataLoads), 
                         visibles: JSON.stringify(this.dataVisibles), 
-                        interval: this.dataInterval, 
+                        interval: this.dataInterval != interval ? this.dataInterval : null, 
                     }, 
                     headers: {
                         "X-CSRF-TOKEN": this.token, 
@@ -129,6 +137,10 @@
                 this.$store.commit("currencies", data.currencies);
                 this.$store.commit("visibles", data.visibles);
                 this.$store.commit("interval", data.interval);
+
+                this.dataLoads = [];
+                this.dataVisibles = [];
+                this.dataInterval = null;
             }, 
         }, 
 

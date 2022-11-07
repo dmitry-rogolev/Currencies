@@ -3,9 +3,10 @@
 namespace App\Classes;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 /**
- * Получает данные от клиента
+ * Предоставляет функционал получения данных от клиента
  */
 class CurrencyRequest
 {
@@ -17,20 +18,44 @@ class CurrencyRequest
     private Collection $loads;
 
     /**
+     * Валюты, которые необходимо отображать
+     *
+     * @var Illuminate\Support\Collection
+     */
+    private Collection $visibles;
+
+    /**
      * Интервал обновления данных
      *
      * @var integer
      */
-    private ?int $interval;
+    private int $interval;
 
-    private const PREFIX_FOR_NAME_OF_CACHE = "currencies_";
+    /**
+     * Префикс для сессии
+     */
+    private const PREFIX_FOR_NAME_OF_SESSION = "currencies_";
 
-    private const NAME_SESSION_INTERVAL = self::PREFIX_FOR_NAME_OF_CACHE . "interval_update_currencies";
+    /**
+     * Название в сессии интервала обновления данных
+     */
+    private const NAME_SESSION_INTERVAL = self::PREFIX_FOR_NAME_OF_SESSION . "interval_update_data";
+
+    /**
+     * Название конфига валют
+     */
+    private const CONFIG_NAME = "currency";
+
+    /**
+     * Название конфига интервала по умолчанию
+     */
+    private const CONFIG_DEFAULT_INTERVAL = self::CONFIG_NAME . ".default_interval";
 
     public function __construct()
     {
         $this->loads = $this->loads();
         $this->interval = $this->interval();
+        $this->visibles = $this->visibles();
     }
 
     /**
@@ -44,9 +69,19 @@ class CurrencyRequest
     }
 
     /**
+     * Возвращает валюты, которые необходимо отображать
+     *
+     * @return Illuminate\Support\Collection
+     */
+    public function getVisibles()
+    {
+        return $this->visibles;
+    }
+
+    /**
      * Возвращает интервал обновления данных
      *
-     * @return ?int
+     * @return int
      */
     public function getInterval()
     {
@@ -60,12 +95,14 @@ class CurrencyRequest
      */
     private function loads()
     {
-        if (request()->has("loads"))
+        $loads = collect(json_decode(request()->loads));
+
+        if ($loads->isNotEmpty())
         {
-            return collect(json_decode(request()->loads));
+            Log::info("Получены данные о валютах, которые необходимо загружать, от клиента", [ "loads" => $loads ]);
         }
 
-        return collect();
+        return $loads;
     }
 
     /**
@@ -77,18 +114,50 @@ class CurrencyRequest
     {
         $interval = request()->get("interval");
 
-        if ($interval) $this->setSessionInterval($interval);
+        if ($interval) 
+        {
+            Log::info("Получен интервал обновления данных от клиента", [ "interval" => $interval ]);
+            $this->setSessionInterval($interval);
+        }
 
-        return $interval ?? $this->getSessionInterval() ?? config("currency.default_interval");
+        return $interval ?? $this->getSessionInterval() ?? config(self::CONFIG_DEFAULT_INTERVAL);
     }
-
+    
+    /**
+     * Записывает интервал обновления данных в сессию
+     *
+     * @param integer $interval
+     * @return void
+     */
     private function setSessionInterval(int $interval)
     {
         session()->put(self::NAME_SESSION_INTERVAL, $interval);
     }
 
+    /**
+     * Возвращает интервал обновления данных из сессии
+     *
+     * @return int
+     */
     private function getSessionInterval()
     {
         return session(self::NAME_SESSION_INTERVAL);
+    }
+
+    /**
+     * Получает валюты, которые необходимо отображать
+     *
+     * @return Illuminate\Support\Collection
+     */
+    private function visibles()
+    {
+        $visibles = collect(json_decode(request()->visibles));
+
+        if ($visibles->isNotEmpty())
+        {
+            Log::info("Получены данные о валютах, которые необходимо отображать, от клиента", [ "visibles" => $visibles ]);
+        }
+
+        return $visibles;
     }
 }

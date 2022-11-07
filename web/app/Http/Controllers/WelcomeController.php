@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Classes\Currencies;
-use App\Models\Load;
-use Illuminate\Support\Collection;
+use App\Classes\Currency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -12,13 +10,13 @@ class WelcomeController extends Controller
 {
     public function store(Request $request)
     {
-        $curry = Currencies::settings();
+        $curry = Currency::settings();
 
         return response()->json([
-            "currencies" => $curry->currencies(), 
-            "originals" => $curry->originals(), 
-            "visibles" => $curry->allCurrencies(), 
-            "interval" => $curry->interval(), 
+            "originals" => $curry->getOriginals(), 
+            "currencies" => $curry->getCurrencies(), 
+            "visibles" => $curry->getAllCurrencies(), 
+            "interval" => $curry->getInterval(), 
             "header" => config("view.title"), 
         ]);
     }
@@ -30,12 +28,12 @@ class WelcomeController extends Controller
      */
     public function settings()
     {
-        $curry = Currencies::settings();
+        $curry = Currency::settings();
 
         return response()->json([
-            "currencies" => $curry->currencies(), 
-            "visibles" => $curry->allCurrencies(), 
-            "interval" => $curry->interval(), 
+            "currencies" => $curry->getCurrencies(), 
+            "visibles" => $curry->getAllCurrencies(), 
+            "interval" => $curry->getInterval(), 
         ]);
     }
 }

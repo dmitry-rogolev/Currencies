@@ -1,8 +1,8 @@
 <template>
-    <ButtonComponent :target="id" :title="title" :classes="buttonClasses" v-bind="$attrs">
+    <ButtonComponent @show="$emit('show')" :target="id" :title="title" :classes="buttonClasses" v-bind="$attrs">
         <slot name="button"></slot>
     </ButtonComponent>
-    <WindowComponent @save="$emit('save')" @close="close" :id="id" :title="header" :classes="windowClasses">
+    <WindowComponent @save="close(true)" @close="close" :id="id" :title="header" :classes="windowClasses">
         <slot name="window"></slot>
     </WindowComponent>
 </template>
@@ -35,14 +35,14 @@
         }, 
 
         methods: {
-            show()
-            {
-                this.$bootstrap.Modal.getInstance(document.getElementById(this.id)).show();
-            }, 
-
-            close()
+            close(save = false)
             {
                 this.$bootstrap.Modal.getInstance(document.getElementById(this.id)).hide();
+
+                if (save)
+                {
+                    this.$emit("save");
+                }
             }, 
         }, 
     }

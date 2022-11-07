@@ -3,6 +3,7 @@
 namespace App\Classes;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use SimpleXMLElement;
 
 /**
@@ -25,7 +26,7 @@ class HttpCurrencyServiceProvider
     /**
      * Название конфига для источника валют
      */
-    private const CONFIG_SOURCE_NAME = "source";
+    private const CONFIG_SOURCE_NAME = self::CONFIG_NAME . ".source";
 
     /**
      * Количество попыток получения данных через http
@@ -76,7 +77,8 @@ class HttpCurrencyServiceProvider
         while (true)
         {
             try {
-                $data = file_get_contents(config(self::CONFIG_NAME . "." . self::CONFIG_SOURCE_NAME));
+                $data = file_get_contents(config(self::CONFIG_SOURCE_NAME));
+                Log::info("Получены данные о валютах");
                 break;
             }
             catch (Exception $e) {
